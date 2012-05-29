@@ -1,0 +1,190 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Graph Drawing Service</title>
+<script src="../scripts/jquery/js/jquery-1.7.2.min.js"></script>
+<script src="../scripts/jquery/js/jquery-ui-1.8.20.custom.min.js"></script>
+<script type="text/javascript" src="../scripts/d3/d3.v2.js"></script>
+<link type='text/css' rel='stylesheet' href='../styles/force.css' />
+<link type='text/css' rel='stylesheet' href="../styles/form.css" />
+<link type='text/css' rel='stylesheet' href="../scripts/jquery/css/ui-lightness/jquery-ui-1.8.20.custom.css" />
+
+</head>
+<body>
+	<script>
+	//
+	var hiddenElementID;
+		
+	//graph drawing funcitons
+	var width = 900,
+	    height = 600;
+	
+	var color = d3.scale.category20();
+	
+	var force = d3.layout.force()
+	    .charge(-100)
+	    .gravity(.05)
+	    .linkDistance(150)
+	    .size([width, height]);
+	
+
+	//search function
+	$(document).ready(function(){
+		
+		var divClone = $("#graph").html();
+		
+		$("#name").val("");
+		$("#name").each(function() {
+			var autoCompelteElement = this;
+			
+			var formElementName = $(this).attr('id');
+			hiddenElementID  = formElementName + '_autocomplete_hidden';								
+			
+			/* create new hidden input with name of orig input */
+			$(this).after("<input type=\"hidden\" \" id=\"" + hiddenElementID + "\" />");
+				
+			$(this).autocomplete({
+				source : function(request, response) {
+						$.ajax({
+								url : "../rest/nodes/autocomplete",
+								dataType : "jsonp",
+								
+								data : {
+									featureClass : "P",
+									style : "full",
+									maxRows : 14,
+									name_startsWith : request.term
+								},
+							
+								success : function(data){
+									ajaxData=data;
+									response($.map(data, 
+											function(item) {return {label : item.name,	value : item.id}}
+									));
+								}
+						});
+				},
+				
+				minLength : 2,
+				
+				focus: function(event, ui) {  
+							var selectedObj = ui.item;
+							$('#'+formElementName).val(selectedObj.label);
+							return false;						
+						},
+									
+				select : function(event, ui) {
+							var selectedObj = ui.item;	
+							log(selectedObj ? "Selected: " + selectedObj.label+ " (id:"+selectedObj.value+"); press 'Draw' button now.": "Nothing selected, input was "+ this.value);
+																
+							$('#'+formElementName).val(selectedObj.label);
+							$('#'+hiddenElementID).val(selectedObj.value);
+							return false;						
+						},
+												
+				open : function() {$(this).removeClass("ui-corner-all").addClass("ui-corner-top");},
+				close : function() {$(this).removeClass("ui-corner-top").addClass("ui-corner-all");}
+			});
+		});
+		
+		//logging
+		function log(message) {
+			$("<div/>").text(message).prependTo("#log");
+			$("#log").scrollTop(0);
+		};
+		
+		//graph drawing function		
+		$("#draw").click(function(){
+			   // do something with ajaxData
+			   if (typeof hiddenElementID != "undefined") {			      
+			      // render graphs
+			      var node_id= $('#'+hiddenElementID).val();
+				 
+			      $("#graph").html(divClone);
+			      var svg = d3.select("#graph").append("svg")
+				    .attr("width", width)
+				    .attr("height", height);
+				
+			      
+			      //library call
+					d3.json("../rest/graphs/"+node_id, function(json) {
+					  force
+					      .nodes(json.nodes)
+					      .links(json.links)
+					      .start();
+					
+					  var link = svg.selectAll("line.link")
+					      .data(json.links)
+					      .enter().append("line")
+					      .attr("class", "link")
+					      .style("stroke-width", function(d) { return Math.sqrt(d.value); });
+					
+					  var node = svg.selectAll("circle.node")
+					      .data(json.nodes)
+					      .enter().append("circle")
+					      .attr("class", "node")
+					      .attr("r", function(d){
+					    	  				if(d.web_id ==0){return 13;}
+					    	  				else{return 10;}
+					       			}
+					      )
+					      .style("fill", function(d) { return color(d.web_id); })
+					      .call(force.drag)
+					      ;
+					
+					  //node.append("title")
+				      //.text(function(d) { return d.name; });
+					  
+					  node.append("svg:text")
+					  	   .attr("class", "nodetext")
+					  	   .attr("dx", 12)
+					  	   .attr("dy", ".35em")
+					  	   .text(function(d) { return d.name });
+					
+					  force.on("tick", function() {
+					    link.attr("x1", function(d) { return d.source.x; })
+					        .attr("y1", function(d) { return d.source.y; })
+					        .attr("x2", function(d) { return d.target.x; })
+					        .attr("y2", function(d) { return d.target.y; });
+					
+					    
+					    node.attr("cx", function(d) { return d.x; })
+					        .attr("cy", function(d) { return d.y; });
+					  });
+					});
+			      
+			   }else{
+				   alert("No node is selected");
+			   }
+		});
+	});
+	</script>
+	
+	
+
+	<div id="container" style="width: 100%">
+		<div id="menue" style="width: 30%; float:left;">
+		<div class="searchbox" style="width:90%">
+			<label for="name">Author's name: </label>
+			<br> 			
+			<input id="name"/>			
+			<button id="draw">Draw</button>
+		</div>
+		<br>
+		
+
+		<div class="searchbox">
+			<label for="log">Author's Profile <span class="small">(coming soon)</span>: </label>
+			<br>
+			<div class="ui-widget-content" id="log" name="log" style="width:90%"></div>
+		</div>
+		
+		</div>
+				
+		<div id="content" style="width:70%; float:left;">
+			<div id="graph"></div>
+		</div>
+	</div>
+	
+</body>
+</html>

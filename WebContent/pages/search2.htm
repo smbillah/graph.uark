@@ -1,0 +1,116 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Search box service</title>
+<script src="../scripts/jquery/js/jquery-1.7.2.min.js"></script>
+<script src="../scripts/jquery/js/jquery-ui-1.8.20.custom.min.js"></script>
+<link type='text/css' rel='stylesheet' href="../scripts/jquery/css/ui-lightness/jquery-ui-1.8.20.custom.css" />
+<style>
+
+#name {
+	width: 17em;
+}
+</style>
+
+</head>
+<body>
+	<script>
+	//
+	var ajaxData;
+	
+		//search function
+		$(function() {
+			function log(message) {
+				$("<div/>").text(message).prependTo("#log");
+				$("#log").scrollTop(0);
+			}
+
+			
+			$("#name").each(function() {
+				var autoCompelteElement = this;
+				
+				var formElementName = $(this).attr('id');
+				var hiddenElementID  = formElementName + '_autocomplete_hidden';								
+				
+				/* create new hidden input with name of orig input */
+				$(this).after("<input type=\"hidden\" \" id=\"" + hiddenElementID + "\" />");
+			
+			
+				$(this).autocomplete({
+					source : function(request, response) {
+							$.ajax({
+									url : "http://localhost:8081/graph.uark/rest/nodes/autocomplete",
+									dataType : "jsonp",
+									
+									data : 
+									{
+										featureClass : "P",
+										style : "full",
+										maxRows : 20,
+										name_startsWith : request.term
+									},
+								
+									success : function(data) 
+									{
+										ajaxData=data;
+										response($.map(data, 
+												function(item) {return {label : item.name,	value : item.id}}
+										));
+									}
+							});
+					},
+					
+					minLength : 2,
+					
+					focus: function(event, ui) {  
+								var selectedObj = ui.item;
+								$('#'+formElementName).val(selectedObj.label);
+								return false;						
+							},
+										
+					select : function(event, ui) {
+								var selectedObj = ui.item;	
+								log(selectedObj ? "Selected: " + selectedObj.label+ " (id:"+selectedObj.value+")": "Nothing selected, input was "+ this.value);
+																	
+								$('#'+formElementName).val(selectedObj.label);
+								$('#'+hiddenElementID).val(selectedObj.value);
+								return false;						
+							},
+													
+					open : function() {$(this).removeClass("ui-corner-all").addClass("ui-corner-top");},
+					close : function() {$(this).removeClass("ui-corner-top").addClass("ui-corner-all");}
+				});
+			});
+		
+		});
+		
+		
+		//graph drawing function		
+		$("#Draw").click(function(){
+			   // do something with ajaxData
+			   if (typeof ajaxData != "undefined") {
+			      var valueToAdd = $("#yourinput").val();
+			      // your processing here
+			   }
+		});
+	</script>
+	
+	
+	<div class="demo">
+
+		<div class="ui-widget">
+			<label for="name">Author's name: </label> 
+			<br>
+			<input id="name"/>
+		</div>
+		
+
+		<div class="ui-widget" style="margin-top: 2em; font-family: Arial">
+			Result:
+			<div class="ui-widget-content" id="log" style="height: 200px; width: 300px; overflow: auto;" ></div>
+		</div>
+
+	</div>
+	
+</body>
+</html>

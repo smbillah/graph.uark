@@ -1,0 +1,183 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Node Creation Page</title>
+<script src="../scripts/jquery/js/jquery-1.7.2.min.js"></script>
+<script src="../scripts/jquery/js/jquery-ui-1.8.20.custom.min.js"></script>
+<link type='text/css' rel='stylesheet' href="../styles/form.css" />
+<script type="text/javascript" src="../scripts/notification/sticky.min.js"></script>
+<link rel="stylesheet" href="../scripts/notification/sticky.min.css" type="text/css" />
+<script src="../scripts/forms/forms.js"></script> 
+
+</head>
+<body>
+	<div class="myselect">
+		<h1>Select a Node Type </h1>	
+		<select id="category">		
+			<option value="authors" selected>authors</option>
+			<option value="papers">papers</option>
+			<option value="interests">interests</option>
+		</select>
+		<div class="spacer"></div>
+		<p></p>
+	</div>
+	
+	<div class="spacer"></div>
+	
+	<div id="form_authors" class="stylized">		
+		<h1>Add New Author </h1>
+		<p>Enter basic information about an author</p>		
+		<form action="../rest/nodes/add_author">
+			<label for="fname">First Name* <span class="small">Required for indexing</span> </label> 
+			<input type="text" name="fname" />
+			
+			<label for="mname">Middle Name <span class="small">Optional middle name</span> </label> 
+			<input type="text" name="mname" /> 
+			
+			<label for="lname">Last Name* <span class="small">Required for indexing</span> </label> 
+			<input type="text" name="lname" /> 
+			
+			<label for="num_pubs">Num Pubs* <span class="small">Number of publications</span> </label> 
+			<input type="text" name="num_pubs" /> 
+			
+			<label for="citeseer_id">CiteSeer ID<span class="small">CiteSeer ID for this author</span> </label> 
+			<input type="text" name="citeseer_id" /> 
+						
+			
+			<input type="hidden" class="hidden_category" name="index"/>
+			<button type="submit" id="submit">Add</button>
+			
+			<div class="spacer"></div>
+		</form>
+	</div>		
+	
+	<div id="form_interests" class="stylized">		
+		<h1>Add New Interest </h1>
+		<p>Enter basic information about an interest</p>
+		
+		<form action="../rest/nodes/add_interest" method="POST">
+			<label for="name">Interest Name* <span class="small">Required for indexing</span> </label> 
+			<input type="text" name="name" />									
+			
+			<input type="hidden" class="hidden_category" name="index"/>
+			<button type="submit" id="submit">Add</button>
+			
+			<div class="spacer"></div>
+		</form>
+	</div>
+	
+	<div id="form_papers" class="stylized">		
+		<h1>Add New Paper </h1>
+		<p>Enter basic information about a paper</p>
+		
+		<form action="../rest/nodes/add_paper" method="POST">
+			<label for="name">Paper Title* <span class="small">Required for indexing</span> </label> 
+			<input type="text" name="title" />									
+			
+			<input type="hidden" class="hidden_category" name="index"/>
+			<button type="submit" id="submit">Add</button>
+			
+			<div class="spacer"></div>
+		</form>
+	</div>
+		
+	
+	<script>
+	$(document).ready(function(){
+		
+		//initial view		
+		$(".stylized").hide();		
+        $('#form_authors').show();
+        
+        
+        //hidden field data
+        $('#category').val("authors");        
+        $('.hidden_category').each(function(){
+        	$(this).val("authors");
+        });
+                
+		
+        //notification
+        $.sticky('The page has been loaded!');
+        
+        var selected_form = "#form_authors";
+        
+      	//ajax forms parameters
+        var options = { 
+                //target:        '#output1',   // target element(s) to be updated with server response 
+                beforeSubmit:  showRequest,  // pre-submit callback 
+                success:       showResponse,  // post-submit callback 
+         
+                // other available options: 
+                //url:       "../rest/nodes/add_author",         // override for form's 'action' attribute 
+                type:      "POST",        // 'get' or 'post', override for form's 'method' attribute 
+                //dataType:  null        // 'xml', 'script', or 'json' (expected server response type) 
+                clearForm: true,        // clear all form fields after successful submit 
+                //resetForm: true,        // reset the form after successful submit 
+         
+                // $.ajax options can be used here too, for example: 
+                timeout:   3000 
+         }; 
+      
+     	
+      	// pre-submit callback 
+        function showRequest(formData, jqForm, options) { 
+            // formData is an array; here we use $.param to convert it to a string to display it
+            var form =jqForm[0];
+            var is_validated=false;
+            
+            switch(selected_form){
+            case "#form_authors":
+            	if(form.fname.value && form.lname.value && form.num_pubs.value) 
+            		is_validated= true;
+            	break;
+            
+            case "#form_interests":
+            	if(form.name.value) 
+            		is_validated= true;
+            	break;
+            
+            case "#form_papers":
+            	if(form.title.value) 
+            		is_validated= true;; 
+            	break;            
+            }
+            if (!is_validated)
+            	$.sticky("Some mandatory parameters are missing");
+            	
+            return is_validated;                         
+        }; 
+        
+     	
+        // post-submit callback 
+        function showResponse(responseText, statusText, xhr, $form)  {             	
+            //notification
+            $.sticky(responseText);	          
+        };
+        
+     
+        // bind to the forms' submit event 
+        $(".stylized").each(function(){
+        	$(this).find("form").submit(function() {                         	
+            	$(this).ajaxSubmit(options);                
+                return false; 
+            }); 			
+        });
+        
+      
+        //value change on drop down
+        $('#category').change(function () {
+        	$('.hidden_category').each(function(){
+            	$(this).val($('#category').val());
+            });
+        	
+			$(".stylized").hide();			        
+	        selected_form='#form_' +$('#category').val();
+	        $(selected_form).show();	        
+		});         
+	});
+				 	
+	</script>
+</body>
+</html>

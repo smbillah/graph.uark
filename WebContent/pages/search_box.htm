@@ -1,0 +1,95 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Search box service</title>
+<script src="../scripts/jquery/js/jquery-1.7.2.min.js"></script>
+<script src="../scripts/jquery/js/jquery-ui-1.8.20.custom.min.js"></script>
+<link type='text/css' rel='stylesheet' href="../styles/form.css" />
+<link type='text/css' rel='stylesheet' href="../scripts/jquery/css/ui-lightness/jquery-ui-1.8.20.custom.css" />
+<style>
+.ui-autocomplete-loading {
+	background: white
+		url("../scripts/jquery/css/ui-lightness/images/ui-anim_basic_16x16.gif")
+		right center no-repeat;
+}
+
+#name {
+	width: 17em;
+}
+</style>
+
+</head>
+<body>
+	<script>
+	var ajaxData;
+		$(function() {
+			function log(message) {
+				$("<div/>").text(message).prependTo("#log");
+				$("#log").scrollTop(0);
+			}
+
+			$("#name").autocomplete({
+					source : function(request, response) {
+							$.ajax({
+									url : "http://localhost:8081/graph.uark/rest/nodes/autocomplete",
+									dataType : "jsonp",
+									
+									data : 
+									{
+										featureClass : "P",
+										style : "full",
+										maxRows : 12,
+										name_startsWith : request.term
+									},
+								
+									success : function(data) 
+									{
+										ajaxData=data;
+										response($.map(data, 
+												function(item) {return {label : item.name+ " (id:"+item.id+")",	value : item.name}}
+										));
+									}
+							});
+					},
+					
+					minLength : 2,
+					
+					select : 	function(event, ui) {
+									log(ui.item ? "Selected: " + ui.item.label: "Nothing selected, input was "+ this.value);
+								},
+								open : function() {
+									$(this).removeClass("ui-corner-all").addClass("ui-corner-top");
+								},
+								close : function() {
+									$(this).removeClass("ui-corner-top").addClass("ui-corner-all");
+								}
+					});
+			});
+		
+		
+		$("#yourbutton").click(function(){
+			   // do something with ajaxData
+			   if (typeof ajaxData != "undefined") {
+			      var valueToAdd = $("#yourinput").val();
+			      // your processing here
+			   }
+		});
+	</script>
+
+	<div class="stylized">
+
+		<div class="stylized">
+			<label for="name">Author's name: </label> 
+			<br>
+			<input id="name"/>
+		</div>
+
+		<div class="stylized">
+			Result:
+			<div class="ui-widget-content" id="log" style="height: 200px; width: 300px; overflow: auto;" ></div>
+		</div>
+
+	</div>
+	
+</body>
+</html>
