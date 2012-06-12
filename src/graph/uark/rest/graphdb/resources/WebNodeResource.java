@@ -27,7 +27,7 @@ public class WebNodeResource {
 
 	// Application integration
 	@GET
-	@Produces({ MediaType.APPLICATION_JSON })
+	@Produces({ MediaType.APPLICATION_XML })
 	public WebNode getNode() {
 		WebNode node = WebNodeDao.instances.getWebNode(id);
 		
@@ -48,14 +48,15 @@ public class WebNodeResource {
 		return node;
 	}
 	
-	@GET
-	@Produces(MediaType.TEXT_HTML)
-	public WebNode getNodeHTML() {
-		WebNode node = WebNodeDao.instances.getWebNode(id);
-		if (node == null)
-			throw new RuntimeException("Get: WebNode with " + id + " not found");
-		return node;
-	}
+//	
+//	@GET
+//	@Produces(MediaType.TEXT_HTML)
+//	public WebNode getNodeHTML() {
+//		WebNode node = WebNodeDao.instances.getWebNode(id);
+//		if (node == null)
+//			throw new RuntimeException("Get: WebNode with " + id + " not found");
+//		return node;
+//	}
 
 	@PUT
 	@Consumes(MediaType.APPLICATION_XML)

@@ -18,9 +18,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.UriInfo;
 
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.rest.graphdb.entity.RestRelationship;
+
 import com.sun.jersey.api.json.JSONWithPadding;
-
-
 
 //Will map the resource to the URL todos
 @Path("/nodes")
@@ -98,13 +99,48 @@ public class WebNodesResource {
 			return  node.getName()+ " {id:"+node.getId()+"}"+" created successfully!";
 		}else{
 			return "An error has been occured :(";
-		}
-				
-//		servletResponse.sendRedirect("../../pages/forms.htm");
-//		servletResponse.sendRedirect("../create_node.htm");
-		
+		}		
 	}
 	
+	@POST
+	@Path("add_relationship")
+	@Produces(MediaType.TEXT_PLAIN)
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	public String addRelationship(@FormParam("source_id") String source_id,
+			@FormParam("target_id") String target_id,
+			@FormParam("relationship") String relationship,
+			@FormParam("num_connections") String num_connections,
+			@Context HttpServletResponse servletResponse) throws IOException {
+				
+
+		Relationship rel= WebNodeDao.instances.addRelationship(source_id, target_id, relationship, num_connections);
+		if(rel!=null){
+			return  "relationship"+ " {id:"+rel.getId()+"}"+" created successfully!";
+		}else{
+			return "An error has been occured :(";
+		}						
+	}
+	
+	@POST
+	@Path("edit_author")
+	@Produces(MediaType.TEXT_PLAIN)
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	public String editAuthor(@FormParam("fname") String fname,
+			@FormParam("mname") String mname,
+			@FormParam("lname") String lname,
+			@FormParam("num_pubs") String num_pubs,
+			@FormParam("citeseer_id") String citeseer_id,
+			@FormParam("id") String id,
+			@Context HttpServletResponse servletResponse) throws IOException {
+				
+		WebNode node= WebNodeDao.instances.editAuthor(fname,mname,lname,num_pubs,citeseer_id,id);
+		if(node!=null){
+			return  node.getName()+ " {id:"+node.getId()+"}"+" updated successfully!";
+		}else{
+			return "An error has been occured :(";
+		}
+	}
+
 	@POST
 	@Path("add_paper")
 	@Produces(MediaType.TEXT_PLAIN)
@@ -112,7 +148,6 @@ public class WebNodesResource {
 	public String addPaper(@FormParam("title") String title,			
 			@FormParam("index") String index,
 			@Context HttpServletResponse servletResponse) throws IOException {
-				
 
 		WebNode node= WebNodeDao.instances.createPaper(title, index);
 		if(node!=null){
@@ -120,11 +155,8 @@ public class WebNodesResource {
 		}else{
 			return "An error has been occured :(";
 		}
-				
-//		servletResponse.sendRedirect("../../pages/forms.htm");
-//		servletResponse.sendRedirect("../create_node.htm");
-		
 	}
+
 	@POST
 	@Path("add_interest")
 	@Produces(MediaType.TEXT_PLAIN)
@@ -133,27 +165,23 @@ public class WebNodesResource {
 			@FormParam("index") String index,
 			@Context HttpServletResponse servletResponse) throws IOException {
 				
-
 		WebNode node= WebNodeDao.instances.createInterest(name, index);
 		if(node!=null){
 			return  node.getName()+ " {id:"+node.getId()+"}"+" created successfully!";
 		}else{
 			return "An error has been occured :(";
-		}
-				
+		}				
 //		servletResponse.sendRedirect("../../pages/forms.htm");
-//		servletResponse.sendRedirect("../create_node.htm");
-		
+//		servletResponse.sendRedirect("../create_node.htm");		
 	}
-
-
 
 	// Allows to type http://localhost:8081/graph.uark/rest/nodes/1
-	// 1 will be treaded as parameter node and passed to WebNodeResource
+	// 1 will be treaded as parameter node and passed to WebNodeResource	
+	@GET
 	@Path("{node}")
-	public WebNodeResource getNode(@PathParam("node") String id) {
-		return new WebNodeResource(uriInfo, request, id);
+	@Produces({ MediaType.APPLICATION_JSON})
+	public Author getNode(@PathParam("node") String id) {
+		return WebNodeDao.instances.getAuthor(id);
 	}
-	
 	
 }
