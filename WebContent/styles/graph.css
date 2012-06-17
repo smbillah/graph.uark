@@ -1,0 +1,7 @@
+.circle {
+  stroke: #fff;
+  stroke-width: 1.5px;
+}
+
+.link { stroke: #ccc; }
+.nodetext { pointer-events: none; font: 10px sans-serif; }
