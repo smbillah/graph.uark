@@ -1,0 +1,145 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+	<title>Graph Drawing Service</title>
+	<script src="../scripts/jquery/js/jquery-1.7.2.min.js"></script>
+	<script src="../scripts/jquery/js/jquery-ui-1.8.20.custom.min.js"></script>
+	<link type='text/css' rel='stylesheet' href="../scripts/jquery/css/ui-lightness/jquery-ui-1.8.20.custom.css" />
+	
+	<script type="text/javascript" src="../scripts/uark/autocomplete.js"></script>
+	
+	<script type="text/javascript" src="../scripts/notification/sticky.min.js"></script>
+	<link rel="stylesheet" href="../scripts/notification/sticky.min.css" type="text/css" />
+	
+	<script src="../scripts/forms/forms.js"></script> 
+	<link type='text/css' rel='stylesheet' href="../styles/form.css" />
+
+
+</head>
+
+<body>
+	<script>	
+	var hiddenElementID;		
+	//search function
+	$(document).ready(function(){
+		
+		//autocomplete searchbox
+		var hidden_source = "hidden_source",
+			hidden_target = "hidden_target";
+		
+		autocomplete(hidden_source, "name_source", "loadSourceID");
+		autocomplete(hidden_target, "name_target", "loadTargetID");
+		
+		var options = {     
+	            beforeSubmit:  processRelationshipRequest,
+	            success:       showResponse,  
+	            //url:       "../rest/nodes/add_relationship",  
+	            type:      "POST",    
+	            //dataType:  null     
+	            clearForm: true,      
+	            //resetForm: true,    
+	            timeout:   3000 
+	     };
+	    
+        //notification
+        $.sticky('The page has been loaded!');
+        
+      //pre-submit callback 
+        function processRelationshipRequest(formData, jqForm, options) { 
+            // formData is an array; here we use $.param to convert it to a string to display it
+            var form =jqForm[0];        
+            var is_validated=false;
+            
+            if(form.num_connections && form.source_id && form.target_id && form.relationship){             	
+            	is_validated= true;	     
+            }
+            
+            if(!is_validated) 
+            	$.sticky("Some mandatory parameters are missing");
+            return is_validated;                         
+        }; 
+
+
+        function showResponse(responseText, statusText, xhr, $form)  {             	
+        	//notification
+            $.sticky(responseText);	          
+        };
+        
+        $("#div_relationship").each(function(){
+        	$(this).find("form").submit(function() {                         	
+	        	$(this).ajaxSubmit(options);	        	
+	            return false; 
+	        }); 			
+	    });
+        
+        //value change on drop down
+        $("input[name=relationship]").val($('#category').val()); 
+        $('#category').change(function () {
+        	$("input[name=relationship]").val($('#category').val());        	
+        });
+	});
+	</script>
+	<div id="container" style="width: 100%">
+		<div id="menue_source" style="width: 29%; float:left;">
+			<div class="searchbox" style="width:90%">
+				<label for="name_source">Source Author: </label>
+				<br> 			
+				<input id="name_source"/>						
+			</div>
+			<br>				
+			<div class="searchbox">
+				<label for="log_name_source">Author's Profile <span class="small">(coming soon)</span>: </label>
+				<br>
+				<div class="ui-widget-content" id="log_name_source"  style="width:90%"></div>
+			</div>		
+		</div>
+				
+		<div id="content" style="width:40%; float:left;">			
+				<div class="myselect">
+					<h1>Select a Relationship Type </h1>	
+					<select id="category">		
+						<option value="coauthor" selected>coauthor</option>
+						<option value="cites">cites</option>
+						<option value="cited_by">cited_by</option>
+					</select>
+					<div class="spacer"></div>
+					<p></p>
+				</div>
+			
+				<div class="spacer"></div>
+			
+				
+				<div id="div_relationship" class="stylized">		
+					<h1>Enter Relationship Information</h1>
+					<p>Enter number of shared connection between these two authors</p>		
+					<form action="../rest/nodes/add_relationship" method="post">
+						<label for="num_connections">#connections <span class="small">Number of connections</span> </label> 
+						<input type="text" name="num_connections" />												
+						<input type="hidden" name="source_id"/>
+						<input type="hidden" name="target_id"/>
+						<input type="hidden" name="relationship"/>
+						<button type="submit" id="submit">Edit</button>						
+						<div class="spacer"></div>
+					</form>
+				</div>
+				
+							
+		</div>
+		<div id="menue_target" style="width: 29%; float:left;">
+			<div class="searchbox" style="width:90%">
+				<label for="name_target">Target Author: </label>
+				<br> 			
+				<input id="name_target"/>						
+			</div>
+			<br>				
+			<div class="searchbox">
+				<label for="log_name_target">Author's Profile <span class="small">(coming soon)</span>: </label>
+				<br>
+				<div class="ui-widget-content" id="log_name_target" style="width:90%"></div>
+			</div>		
+		</div>
+		
+	</div>
+</body>
+</html>

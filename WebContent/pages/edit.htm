@@ -1,0 +1,125 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Edit Author's Profile</title>
+<script src="../scripts/jquery/js/jquery-1.7.2.min.js"></script>
+<script src="../scripts/jquery/js/jquery-ui-1.8.20.custom.min.js"></script>
+<link type='text/css' rel='stylesheet' href="../scripts/jquery/css/ui-lightness/jquery-ui-1.8.20.custom.css" />
+
+<script type="text/javascript" src="../scripts/uark/autocomplete.js"></script>
+
+<script type="text/javascript" src="../scripts/notification/sticky.min.js"></script>
+<link rel="stylesheet" href="../scripts/notification/sticky.min.css" type="text/css" />
+
+<script src="../scripts/forms/forms.js"></script> 
+<link type='text/css' rel='stylesheet' href="../styles/form.css" />
+
+
+</head>
+<body>
+	<script>	
+	var hiddenElementID="hiddenElementID";		
+	//search function
+	var options = {     
+	            beforeSubmit:  processRelationshipRequest,
+	            success:       showResponse,  
+	            //url:       "../rest/nodes/add_relationship",  
+	            //type:      "POST",    
+	            //dataType:  null     
+	            clearForm: true,      
+	            //resetForm: true,    
+	            timeout:   3000 
+	};
+	
+	function processRelationshipRequest(formData, jqForm, options) { 
+        // formData is an array; here we use $.param to convert it to a string to display it
+        var form =jqForm[0];        
+        var is_validated=false;
+        
+        if(form.fname.value && form.lname.value && form.num_pubs.value) {             	
+        	is_validated= true;	     
+        }
+        
+        if(!is_validated) 
+        	$.sticky("Some mandatory parameters are missing");
+        return is_validated;                         
+    }; 
+
+	
+    function showResponse(responseText, statusText, xhr, $form)  {             	        	
+        $.sticky(responseText);	          
+    };
+    
+
+	
+	$(document).ready(function(){
+		
+		//autocomplete searchbox
+		autocomplete(hiddenElementID, "name","loadData");
+        
+		
+		
+		
+		//notification
+        $.sticky('The page has been loaded!');
+        
+	    //pre-submit callback 
+                $(".stylized").each(function(){
+        	$(this).find("form").submit(function() {                         	
+	        	$(this).ajaxSubmit(options);	        	
+	            return false; 
+	        }); 			
+	    });
+        
+      	
+        
+	});
+	</script>
+		
+	<div id="container" style="width: 100%">
+		<div id="menue" style="width: 30%; float:left;">
+			<div class="searchbox" style="width:90%">
+				<label for="name">Author's name: </label>
+				<br> 			
+				<input id="name"/>						
+			</div>
+			<br>				
+			<div class="searchbox">
+				<label for="log_name">Author's Profile <span class="small">(coming soon)</span>: </label>
+				<br>
+				<div class="ui-widget-content" id="log_name" style="width:90%"></div>
+			</div>		
+		</div>
+				
+		<div id="content" style="width:70%; float:left;">			
+				<div  class="stylized">		
+					<h1>Edit Author's Information </h1>
+					<p>Enter basic information about an author</p>		
+					<form  id="form_author" action="../rest/nodes/edit_author" method="post">
+						<label for="fname">First Name* <span class="small">Required for indexing</span> </label> 
+						<input type="text" name="fname" />
+						
+						<label for="mname">Middle Name <span class="small">Optional middle name</span> </label> 
+						<input type="text" name="mname" /> 
+						
+						<label for="lname">Last Name* <span class="small">Required for indexing</span> </label> 
+						<input type="text" name="lname" /> 
+						
+						<label for="num_pubs">Num Pubs* <span class="small">Number of publications</span> </label> 
+						<input type="text" name="num_pubs" /> 
+						
+						<label for="citeseer_id">CiteSeer ID<span class="small">CiteSeer ID for this author</span> </label> 
+						<input type="text" name="citeseer_id" /> 
+									
+						
+						<input type="hidden" class="hidden_category" name="id"/>
+						<button type="submit" id="submit">Edit</button>
+						
+						<div class="spacer"></div>
+					</form>
+				</div>			
+		</div>
+	</div>
+	
+</body>
+</html>
