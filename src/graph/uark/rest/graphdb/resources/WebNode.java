@@ -125,10 +125,6 @@ public class WebNode {
 		this.num_pubs = num_pubs;
 	}
 
-	@Override
-	public String toString(){
-		return "Hilla Billah: "+ id;
-				
-	}
+	
 		
 }
