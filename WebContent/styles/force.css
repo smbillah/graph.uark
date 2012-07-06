@@ -7,3 +7,9 @@ line.link {
   stroke: #999;
   stroke-opacity: .6;
 }
+
+line.link2 {
+  stroke: rgb(31, 119, 180);
+  stroke-opacity: .6;
+  /*stroke-width:12*/
+}
