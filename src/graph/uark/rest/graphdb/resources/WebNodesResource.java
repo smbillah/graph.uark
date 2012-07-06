@@ -68,16 +68,17 @@ public class WebNodesResource {
 	@Produces({ MediaType.APPLICATION_JSON})	
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	public List<WebNode> executeQuery(@FormParam("query") String query) {
-		return WebNodeDao.instances.getWebNodesFromQuery(query.toLowerCase());
+		return WebNodeDao.instances.getWebNodesFromQuery(query.toLowerCase(),"");
 	}
 	
 	@GET
 	@Path("autocomplete")
 	@Produces({"application/x-javascript"})	
-	public JSONWithPadding executeAutoCompleteQuery(@QueryParam("callback") String callback, @QueryParam("maxRows") String maxRows, @QueryParam("name_startsWith") String startsWith ) {
+	public JSONWithPadding executeAutoCompleteQuery(@QueryParam("callback") String callback, @QueryParam("maxRows") String maxRows, @QueryParam("name_startsWith") String startsWith,
+			@QueryParam("index_type") String index) {
 		//http://ws.geonames.org/searchJSON?callback=jQuery17&featureClass=P&style=full&maxRows=12&name_startsWith=fa&_=1337684744030
 //		return new WebSearchResource(WebNodeDao.instances.getWebNodesFromQuery(startsWith.toLowerCase()+"*"));
-		return new JSONWithPadding(WebNodeDao.instances.getWebNodesFromQuery(startsWith.toLowerCase()+"*"), callback);
+		return new JSONWithPadding(WebNodeDao.instances.getWebNodesFromQuery(startsWith.toLowerCase()+"*", index), callback);
 	}
 	
 
