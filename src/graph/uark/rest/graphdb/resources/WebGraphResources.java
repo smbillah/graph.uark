@@ -23,10 +23,10 @@ public class WebGraphResources {
 	
 	@GET
 	@Produces({ MediaType.APPLICATION_JSON })
-	@Path("coauthor/{graph}")
-	public WebGraph getGraph(@PathParam("graph") String id) {
+	@Path("coauthor/{graph}/{depth}")
+	public WebGraph getGraph(@PathParam("graph") String id, @PathParam("depth") String depth) {
 		//Application integration
-		WebGraph graph = WebNodeDao.instances.buildCoAuthorGraph2(id);
+		WebGraph graph = WebNodeDao.instances.buildCoAuthorGraph2(id, depth);
 		if (graph == null)
 			throw new RuntimeException("Get: WebNode with " + id + " not found");
 		return graph;
