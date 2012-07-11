@@ -8,45 +8,29 @@
 <link type='text/css' rel='stylesheet' href='../styles/force.css' />
 <link type='text/css' rel='stylesheet' href="../styles/form.css" />
 <link type='text/css' rel='stylesheet' href="../scripts/jquery/css/ui-lightness/jquery-ui-1.8.20.custom.css" />
-<script type="text/javascript" src="../scripts/uark/autocomplete.js"></script>
+<script type="text/javascript" src="../scripts/uark/js_lib.js"></script>
 
 </head>
 <body>
 
 	<script>
-	//
-	var hiddenElementID;
-		
+	
 	//graph drawing funcitons
 	var width = 900,
 	    height = 600;
-	var network_type=["coauthor", "citing", "cited"];
-	var node_colors= ["rgb(174, 199, 232)" ,"rgb(255, 127, 14)","rgb(255, 187, 120)"];
-	var selected_color;
-	var color = d3.scale.category20();
-	var force = d3.layout.force()
-	    .charge(-130)
-	    .gravity(.05)
-	    .theta(.1)
-	    .linkDistance(150)
-	    .size([width, height])
-	    ;
 	
-	function redraw(svg) {
-		  //console.log("here", d3.event.translate, d3.event.scale);
-		  svg.attr("transform",
-		       " scale(" + d3.event.scale + ")"
-		    //  +
-		      //"translate(" + d3.event.translate + ")"
-		  );
-	};
+	var network_types=["coauthor", "citing", "cited"],
+		//node_colors= ["rgb(174, 199, 232)" ,"rgb(255, 127, 14)","rgb(255, 187, 120)"],
+		//selected_color,
+		color = d3.scale.category20(),
+		divClone = $("#coauthor").html(),
+		hiddenElementID="hiddenElementID";
 	
-	var divClone = $("#coauthor").html();
-	var hiddenElementID="hiddenElementID";
 	
-	//search function
+	//document ready function
 	$(document).ready(function(){
 		autocomplete(hiddenElementID,"name");
+		
 		$( "#tabs" ).tabs({
 			ajaxOptions: {
 				error: function( xhr, status, index, anchor ) {
@@ -56,99 +40,64 @@
 			}
 		});
 		
-		$("#draw").click(function(){
-			var $tabs = $('#tabs').tabs();
-			var selected = $tabs.tabs('option', 'selected'); // => 0
-			network=network_type[selected];
-			selected_color=node_colors[selected];
-			draw($("#"+hiddenElementID).val(), network);
+		$("#draw").click(function(){			
+			draw($("#"+hiddenElementID).val());
+			//draw(114, $('#depth').val());
+		});
+		
+		
+		
+		
+		//value change on drop down
+        $('.depth').each(function(){
+			$(this).val("3");
+	        $(this).change(function () {        	
+		        //alert("asd "+ $(this).val());
+        		draw($("#"+hiddenElementID).val());	        
+			});
 		});
 	});
 		
+	function node_select(node, index){
+		log("Selected: " + node.name+ " (id:"+node.id+"); press 'Draw' button now.","name");											
+		$('#name').val(node.name);
+		$("#"+hiddenElementID).val(node.id);
+		draw(node.id);
+		//alert(""+node.id+" "+index);
+	};
+	
+	
+	
 	//graph drawing function		
-	function draw(node_id, network_type){
+	function draw(node_id){
 		    // render graphs
 		    //var node_id= $('#'+hiddenElementID).val();
+		    var $tabs = $('#tabs').tabs();
+			var selected = $tabs.tabs('option', 'selected'); // => 0
+			network_type=network_types[selected];
+			depth = $('div#tab_'+network_type+' > div > select').val();
+			//alert(depth);
+			//selected_color=node_colors[selected];
+		    
+			//if (node_id) node_id=114;
+			
 		    if (node_id) { 
 		      $("#"+network_type).empty();
-		    
-		      var force = d3.layout.force()
-			    .charge(-30)
-			    .gravity(.05)
-			    .theta(.1)
-			    .linkDistance(150)
-			    .size([width, height])
-			    ;
-			
-			var svg = d3.select("#"+network_type).append("svg:svg")
-    			.attr("width", width)
-		    	.attr("height", height)
-		    	//.attr("pointer-events", "all")
-		    	//.append('svg:g')
-		    		//.call(d3.behavior.zoom().on("zoom", 
-		    			//	function(){redraw(svg);}))
-		    	//.append('svg:g')
-				;
-			
-	      
-		      //library call
-				d3.json("../rest/graphs/"+network_type+"/"+node_id, function(json) {
-				  force
-				      .nodes(json.nodes)
-				      .links(json.links)
-				      .linkDistance(function(d,i){return 50 + 150 * (-d.value+json.max_connection)/json.max_connection;})
-				      .start();
-				
-				  var link = svg.selectAll("line.link")
-				      .data(json.links)
-				      .enter().append("svg:line")
-				      .attr("class", "link")				      				      
-				      .style("stroke-width", function(d) { return 2+ 5*d.value/json.max_connection; });
-				  
-				  link.append("title")
-				  .text(function(d) { return d.value; });
-				
-				
-				
-				  var node = svg.selectAll("g.node")
-		      		.data(json.nodes)
-		    		.enter().append("svg:g")
-		      		.attr("class", "node")		
-		      		.call(force.drag)
-		      		;
-				  
-				  node.append("svg:circle")					      
-				      .attr("class", "node")
-				      .attr("r", function(d){ return 10;})
-				      .style("fill", function(d) { 
-				    	  				if(d.web_id) 
-				    	  					return selected_color;
-				    	  				else 
-				    	  					return "rgb(31, 119, 180)";})					      
-				      ;
-				  
-				  node.append("svg:text")
-				  	   .attr("class", "nodetext")
-				  	   .attr("dx", 12)
-				  	   .attr("dy", ".35em")
-				  	   .text(function(d) { return d.name });
-				
-				  force.on("tick", function() {
-				    link.attr("x1", function(d) { return d.source.x; })
-				        .attr("y1", function(d) { return d.source.y; })
-				        .attr("x2", function(d) { return d.target.x; })
-				        .attr("y2", function(d) { return d.target.y; });
-				
-				    
-				    node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
-				  });
-				});
-		      
+		      switch(selected){
+		      	case 0:
+		      		coauthor_graph(network_type, node_id, depth, width, height);
+		    	  	break;
+		      	case 1:
+		      		citation_graph(network_type, node_id, depth, width, height);
+			    	break;
+		      	case 2:
+		      		directed_graph(network_type, node_id, depth, width, height);
+			    	break;
+		    	  
+		      }
 		   }else{
 			   alert("No author is selected");
 		   }
-		    
-		    
 	};
 	
 	</script>
@@ -177,15 +126,57 @@
 		<div id="content" style="width:70%; float:left;">
 			<div id="tabs">
 				<ul>
-					<li><a href="#coauthor">Co-Author Graph</a></li>
-					<li><a href="#citing">Citing Authors Graph</a></li>
-					<li><a href="#cited">Cited Authors Graph</a></li>
+					<li><a href="#tab_coauthor">Co-Author Graph</a></li>
+					<li><a href="#tab_citing">Citing Authors Graph</a></li>
+					<li><a href="#tab_cited">Cited Authors Graph</a></li>
 				</ul>
-				<div id= "coauthor" ></div>
-				<div id="citing"></div>
-				<div id="cited"></div>
-			</div>
-			
+				<div id= "tab_coauthor" >
+					<div>
+						<br>						
+						<label>Select Node Depth:  </label>	
+						<select class="depth" style="width: 60px ;text-align: center">		
+							<option value="1">1</option>
+							<option value="2">2</option>
+							<option value="3" selected>3</option>
+							<option value="4">4</option>
+							<option value="5">5</option>
+							<option value="6">6</option>
+						</select>
+					</div>
+					<div id="coauthor"></div>
+				</div>
+				<div id="tab_citing">
+					<div>
+						<br>						
+						<label>Select Node Depth:  </label>	
+						<select class="depth" style="width: 60px ;text-align: center">		
+							<option value="1">1</option>
+							<option value="2">2</option>
+							<option value="3" selected>3</option>
+							<option value="4">4</option>
+							<option value="5">5</option>
+							<option value="6">6</option>
+						</select>
+					</div>
+					<div id="citing"></div>
+				</div>
+				<div id="tab_cited">
+				
+					<div>
+						<br>						
+						<label>Select Node Depth:  </label>	
+						<select class="depth" style="width: 60px ;text-align: center">		
+							<option value="1">1</option>
+							<option value="2">2</option>
+							<option value="3" selected>3</option>
+							<option value="4">4</option>
+							<option value="5">5</option>
+							<option value="6">6</option>
+						</select>
+					</div>
+					<div id="cited"></div>
+				</div>
+			</div>			
 			
 		</div>
 	</div>

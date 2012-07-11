@@ -24,7 +24,7 @@ public class WebGraphResource {
 	@GET
 	@Produces({ MediaType.APPLICATION_JSON })
 	public WebGraph getGraph() {
-		WebGraph graph = WebNodeDao.instances.buildCoAuthorGraph2(id, "3");
+		WebGraph graph = WebNodeDao.instances.buildCoAuthorGraph(id, "3");
 		
 		if (graph == null)
 			throw new RuntimeException("Get: WebNode with " + id + " not found");

@@ -95,6 +95,15 @@ public enum WebNodeDao {
 			return null;
 		}
 	}
+	
+	public Relationship checkRelationship(RestNode src, RestNode target, REL_TYPE rel){
+		for (Relationship r: src.getRelationships(rel,Direction.OUTGOING)){
+			if(r.getEndNode().getId()==target.getId()){
+				return r;
+			}
+		}
+		return null;
+	}
 
 	public Relationship addRelationship(String src, String target,
 			String rel_type, String rel_value) {
@@ -104,23 +113,34 @@ public enum WebNodeDao {
 		RestNode s = restAPI.getNodeById(Long.parseLong(src));
 		RestNode t = restAPI.getNodeById(Long.parseLong(target));
 
-		rel = (RestRelationship) s.createRelationshipTo(t, relationship);
+		if((rel = (RestRelationship) checkRelationship(s, t, relationship))==null){
+			rel = (RestRelationship) s.createRelationshipTo(t, relationship);			
+		}
+		
 
 		// under development
 		switch (relationship) {
 		case coauthor:
+			rel_value=""+(Integer.parseInt(""+ rel.getProperty("" + REL_PROP.num_connections, "0")) 
+					+ Integer.parseInt(rel_value));
 			rel.setProperty("" + REL_PROP.num_connections, rel_value);
 			break;
 
 		case cites:
+			rel_value=""+(Integer.parseInt(""+ rel.getProperty("" + REL_PROP.num_connections, "0")) 
+					+ Integer.parseInt(rel_value));
 			rel.setProperty("" + REL_PROP.num_connections, rel_value);
 			break;
 
 		case cited_by:
+			rel_value=""+(Integer.parseInt(""+ rel.getProperty("" + REL_PROP.num_connections, "0")) 
+					+ Integer.parseInt(rel_value));
 			rel.setProperty("" + REL_PROP.num_connections, rel_value);
 
 			break;
 		case interest:
+			rel_value=""+(Integer.parseInt(""+ rel.getProperty("" + REL_PROP.num_connections, "0")) 
+					+ Integer.parseInt(rel_value));
 			rel.setProperty("" + REL_PROP.num_connections, rel_value);
 
 			break;
@@ -204,33 +224,8 @@ public enum WebNodeDao {
 		return results;
 	}
 
-	private WebGraph expandNetwork(WebGraph graph, RestNode source, int depth) {
-		if (depth <= 0)
-			return graph;
-
-		final TraversalDescription traversalDescription = RestTraversal
-				.description().maxDepth(1).breadthFirst()
-				.relationships(REL_TYPE.coauthor, Direction.BOTH);
-
-		final Traverser traverser = traversalDescription.traverse(source);
-		final Iterable<Node> nodes = traverser.nodes();
-
-		for (Node node : nodes) {
-			RestNode n = (RestNode) node;
-
-			graph.addNode(n);
-			graph.addLink(source, n, 1);
-		}
-
-		for (Node node : nodes) {
-			RestNode n = (RestNode) node;
-			expandNetwork(graph, n, depth - 1);
-		}
-		return graph;
-
-	}
-
-	private String test(String  node_id) {
+	
+	private String nodeTraversal(String  node_id) {
 		
 		
 		Node node= restAPI.getNodeById(Long.parseLong(node_id));
@@ -252,50 +247,8 @@ public enum WebNodeDao {
 		return output;
 	}
 
-	private WebGraph expandNetwork2(WebGraph graph, RestNode source, int depth) {
-		if (depth <= 0)
-			return graph;
-
-		Iterable<Relationship> relationships = source.getRelationships(
-				REL_TYPE.coauthor, Direction.OUTGOING);
-		for (Relationship r : relationships) {
-			RestNode n = (RestNode) r.getEndNode();
-			if (graph.addNode(n))
-				graph.addLink(
-						source,
-						n,
-						Integer.parseInt(""
-								+ r.getProperty("" + REL_PROP.num_connections,
-										"0")));
-		}
-
-		for (Relationship r : relationships) {
-			RestNode n = (RestNode) r.getEndNode();
-			expandNetwork2(graph, n, depth - 1);
-		}
-
-		relationships = source.getRelationships(REL_TYPE.coauthor,
-				Direction.INCOMING);
-		for (Relationship r : relationships) {
-			RestNode n = (RestNode) r.getStartNode();
-			if (graph.addNode(n))
-				graph.addLink(
-						source,
-						n,
-						Integer.parseInt(""
-								+ r.getProperty("" + REL_PROP.num_connections,
-										"0")));
-		}
-
-		for (Relationship r : relationships) {
-			RestNode n = (RestNode) r.getStartNode();
-			expandNetwork2(graph, n, depth - 1);
-		}
-		return graph;
-
-	}
-
-	private void expandNetwork3(WebGraph graph, ArrayList<Long> links ,RestNode source, int depth, REL_TYPE relationship, Direction direction) {
+	
+	private void undirectedExpandNetwork(WebGraph graph, ArrayList<Long> links ,RestNode source, int depth, REL_TYPE relationship, Direction direction) {
 		Stack<RestNode> stack=null;
 		if (depth <= 0) return ;
 		else stack= new Stack<RestNode>();
@@ -309,15 +262,16 @@ public enum WebNodeDao {
 			relationships = source.getRelationships(relationship, Direction.OUTGOING);
 			for (Relationship r : relationships) {
 				
+				//check whether this link-id is already exists in links-array 
 				if(links.contains(r.getId())) continue;
 				links.add(r.getId());
 				
+				//add node to stack for next level expansion
 				RestNode n = (RestNode) r.getEndNode();
 				if (graph.addNode(n)){
 					stack.push(n);
 				}
-				graph.addLink(source,n,
-						Integer.parseInt(""+ r.getProperty(""+ REL_PROP.num_connections, "0")));
+				graph.addLink(source,n,Integer.parseInt(""+ r.getProperty(""+ REL_PROP.num_connections, "0")));
 			}
 			if (direction!=Direction.BOTH) 
 				break;
@@ -340,44 +294,35 @@ public enum WebNodeDao {
 		}
 		
 		while(!stack.isEmpty()){
-			expandNetwork3(graph, links,stack.pop(), depth-1, relationship, direction); 	
+			undirectedExpandNetwork(graph, links,stack.pop(), depth-1, relationship, direction); 	
 		}
 		
 	}
 
-	private WebGraph expandNetwork4(WebGraph graph, RestNode source, int depth, REL_TYPE relationship, Direction direction) {
-		if (depth <= 0)
-			return graph;
+	private void directedExpandNetwork(WebGraph graph, RestNode source, int depth, REL_TYPE relationship, Direction direction) {
+		Stack<RestNode> stack=null;
+		if (depth <= 0) return ;
+		else stack= new Stack<RestNode>();		
 		
 		Iterable<Relationship> relationships = source.getRelationships(relationship,direction);
-		//()
-		switch(direction){
-		case BOTH:
-//			for (Relationship r : relationships) {
-//				if(source == r.getEndNode())
-//				r.getStartNode()
-//				RestNode n = (direction==Direction.OUTGOING)? (RestNode) r.getEndNode():(RestNode) r.getStartNode();			
-//				if(graph.addNode(n))
-//					graph.addLink(source,n,Integer.parseInt(""+ r.getProperty("" + REL_PROP.num_connections,"0")));
-//			}
-			expandNetwork4(graph, source, depth, relationship,Direction.INCOMING);
-			expandNetwork4(graph, source, depth, relationship,Direction.OUTGOING);
-			break;
 
-		case OUTGOING:			
-		case INCOMING:
-			
-			
-			for (Relationship r : relationships) {
-				RestNode n = (direction==Direction.OUTGOING)? (RestNode) r.getEndNode():(RestNode) r.getStartNode();
-				expandNetwork4(graph, n, depth-1, relationship,direction);
+		for (Relationship r : relationships) {
+
+			//add node to stack for next level expansion
+			RestNode n = direction==Direction.OUTGOING? (RestNode) r.getEndNode()
+					:(RestNode) r.getStartNode();
+			if (graph.addNode(n)){
+				stack.push(n);
 			}
-			break;
+			graph.addLink(source,n,Integer.parseInt(""+ r.getProperty(""+ REL_PROP.num_connections, "0")));
 		}
-		return graph;
+		
+		while(!stack.isEmpty()){			
+			directedExpandNetwork(graph, stack.pop(), depth-1, relationship, direction); 	
+		}
 	}
 
-	public WebGraph buildCoAuthorGraph2(String str_id, String depth) {
+	public WebGraph buildCoAuthorGraph(String str_id, String depth) {
 		long id = 0;
 		WebGraph graph;
 		ArrayList<Long> links =new  ArrayList<Long>();
@@ -386,7 +331,7 @@ public enum WebNodeDao {
 			id = Long.parseLong(str_id);
 			RestNode startNode = restAPI.getNodeById(id);
 			graph = new WebGraph(startNode);
-			expandNetwork3(graph, links,startNode, Integer.parseInt(depth), REL_TYPE.coauthor, Direction.BOTH);
+			undirectedExpandNetwork(graph, links,startNode, Integer.parseInt(depth), REL_TYPE.coauthor, Direction.BOTH);
 			
 			return graph;
 
@@ -395,7 +340,7 @@ public enum WebNodeDao {
 		}
 	}
 
-	public WebGraph buildCitingAuthorGraph(String str_id) {
+	public WebGraph buildCitingAuthorGraph(String str_id, String depth) {
 		long id = 0;
 		WebGraph graph;
 
@@ -403,8 +348,7 @@ public enum WebNodeDao {
 			id = Long.parseLong(str_id);
 			RestNode startNode = restAPI.getNodeById(id);
 			graph = new WebGraph(startNode);
-			graph = expandNetwork4(graph, startNode, 3, REL_TYPE.cites,
-					Direction.OUTGOING);
+			directedExpandNetwork(graph, startNode, Integer.parseInt(depth), REL_TYPE.cites, Direction.OUTGOING);
 			return graph;
 
 		} catch (Exception ex) {
@@ -412,7 +356,7 @@ public enum WebNodeDao {
 		}
 	}
 
-	public WebGraph buildCitedAuthorGraph(String str_id) {
+	public WebGraph buildCitedAuthorGraph(String str_id, String depth) {
 		long id = 0;
 		WebGraph graph;
 
@@ -420,8 +364,7 @@ public enum WebNodeDao {
 			id = Long.parseLong(str_id);
 			RestNode startNode = restAPI.getNodeById(id);
 			graph = new WebGraph(startNode);
-			graph = expandNetwork4(graph, startNode, 3, REL_TYPE.cites,
-					Direction.INCOMING);
+			directedExpandNetwork(graph, startNode, Integer.parseInt(depth), REL_TYPE.cites, Direction.INCOMING);
 			return graph;
 
 		} catch (Exception ex) {
@@ -429,23 +372,7 @@ public enum WebNodeDao {
 		}
 	}
 
-	public WebGraph buildCoAuthorGraph(String str_id) {
-		long id = 0;
-		WebGraph graph;
-
-		try {
-			id = Long.parseLong(str_id);
-			RestNode restNode = restAPI.getNodeById(id);
-			
-			graph = new WebGraph(restNode);
-			graph = expandNetwork(graph, restNode, 3);
-			return graph;
-
-		} catch (Exception ex) {
-			return null;
-		}
-	}
-
+	
 	public WebNode removeNode(String str_id) {
 		long id = 0;
 		try {
@@ -519,6 +446,10 @@ public enum WebNodeDao {
 				restAPI.removeFromIndex(index, rest_node, NODE_PROP.lname + "");
 				restAPI.addToIndex(rest_node, index, NODE_PROP.lname + "",
 						lname.toLowerCase());
+			}
+			
+			if (!mname.toLowerCase().equals(auth.getMname())) {
+				rest_node.setProperty(NODE_PROP.mname + "", mname.toLowerCase());				
 			}
 
 			if (Integer.parseInt(num_pubs) != auth.getNum_pubs()) {
@@ -596,10 +527,11 @@ public enum WebNodeDao {
 		// WebNodeDao.instances.addRelationship("56", "115",
 		// REL_TYPE.coauthor+"", "21");
 //		@SuppressWarnings("unused")
-		WebGraph g = WebNodeDao.instances.buildCoAuthorGraph2(id,""+3);
+		//WebGraph g = WebNodeDao.instances.buildCoAuthorGraph(id,""+3);
 		// System.out.println("Happy with this so far" +
 		// auths.get(0).getName());
-//		WebNodeDao.instances.test(id);
+		WebNodeDao.instances.nodeTraversal(id);
+		
 
 	}
 }

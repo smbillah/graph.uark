@@ -1,7 +1,28 @@
 circle.node {
-  stroke: #fff;
+  stroke: #fff;;
+  stroke-width: 1.5px;  
+}
+
+circle.centernode {
+  fill: rgb(31, 119, 180);
+  stroke-width: 1.5px;    
+}
+
+circle.coauthornode {
+  fill: rgb(174, 199, 232);
+  stroke-width: 1.5px;  
+}
+
+circle.citingnode {
+  fill: rgb(255, 127, 14);
   stroke-width: 1.5px;
 }
+
+circle.citednode {
+  fill: rgb(255, 187, 120);
+  stroke-width: 1.5px;  
+}
+
 
 line.link {
   stroke: #999;
@@ -13,3 +34,39 @@ line.link2 {
   stroke-opacity: .6;
   /*stroke-width:12*/
 }
+
+/*for directed multi-link edges*/
+path.link {
+  fill: none;
+  stroke: #999;
+  stroke-width: 1.5px;
+  stroke-opacity: .6;
+  /*stroke-dasharray: 0,2 1;*/
+}
+
+path.link2 {
+  fill: none;
+  stroke: rgb(31, 119, 180);
+  stroke-width: 1.5px;
+  stroke-opacity: .6;
+  /*stroke-width:12*/
+}
+
+
+marker#arrow {
+  fill: #999;
+}
+
+
+marker#arrow2 {
+  fill: rgb(31, 119, 180);
+}
+
+marker#arrow3 {
+  fill: #999;
+}
+
+marker#arrow4 {
+  fill: rgb(31, 119, 180);
+}
+

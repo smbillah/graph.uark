@@ -26,7 +26,7 @@ public class WebGraphResources {
 	@Path("coauthor/{graph}/{depth}")
 	public WebGraph getGraph(@PathParam("graph") String id, @PathParam("depth") String depth) {
 		//Application integration
-		WebGraph graph = WebNodeDao.instances.buildCoAuthorGraph2(id, depth);
+		WebGraph graph = WebNodeDao.instances.buildCoAuthorGraph(id, depth);
 		if (graph == null)
 			throw new RuntimeException("Get: WebNode with " + id + " not found");
 		return graph;
@@ -34,10 +34,10 @@ public class WebGraphResources {
 	
 	@GET
 	@Produces({ MediaType.APPLICATION_JSON })
-	@Path("citing/{graph}")
-	public WebGraph getCitingGraph(@PathParam("graph") String id) {
+	@Path("citing/{graph}/{depth}")
+	public WebGraph getCitingGraph(@PathParam("graph") String id, @PathParam("depth") String depth) {
 		//Application integration
-		WebGraph graph = WebNodeDao.instances.buildCitingAuthorGraph(id);
+		WebGraph graph = WebNodeDao.instances.buildCitingAuthorGraph(id,depth);
 		if (graph == null)
 			throw new RuntimeException("Get: WebNode with " + id + " not found");
 		return graph;
@@ -45,10 +45,10 @@ public class WebGraphResources {
 	
 	@GET
 	@Produces({ MediaType.APPLICATION_JSON })
-	@Path("cited/{graph}")
-	public WebGraph getCitedGraph(@PathParam("graph") String id) {
+	@Path("cited/{graph}/{depth}")
+	public WebGraph getCitedGraph(@PathParam("graph") String id, @PathParam("depth") String depth) {
 		//Application integration
-		WebGraph graph = WebNodeDao.instances.buildCitedAuthorGraph(id);
+		WebGraph graph = WebNodeDao.instances.buildCitedAuthorGraph(id,depth);
 		if (graph == null)
 			throw new RuntimeException("Get: WebNode with " + id + " not found");
 		return graph;
