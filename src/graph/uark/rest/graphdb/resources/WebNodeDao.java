@@ -497,10 +497,12 @@ public enum WebNodeDao {
 
 	}
 
-	public WebNode createPaper(String title, String indexName) {
+	public WebNode createPaper(String title, String citeseer_id,String year,String indexName) {
 		Map<String, Object> props = new HashMap<String, Object>();
 
 		props.put(NODE_PROP.title + "", title.toLowerCase());
+		props.put(NODE_PROP.year + "", year);
+		props.put(NODE_PROP.citeseer_id + "", citeseer_id);
 
 		try {
 			RestNode rest_node = restAPI.createNode(props);

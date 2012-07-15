@@ -3,7 +3,7 @@ package graph.uark.rest.graphdb.models.constants;
 public enum NODE_PROP {
 	
 	fname("fname"),mname("mname"), lname("lname"), num_pubs("num_pubs"), citeseer_id("citeseer_id"),
-	title("title"), interest("interest");
+	title("title"), year("year"),interest("interest");
 	
 	
 	private String prop;

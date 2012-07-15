@@ -150,9 +150,11 @@ public class WebNodesResource {
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	public String addPaper(@FormParam("title") String title,			
 			@FormParam("index") String index,
+			@FormParam("year") String year,
+			@FormParam("citeseer_id") String citeseer_id,
 			@Context HttpServletResponse servletResponse) throws IOException {
 
-		WebNode node= WebNodeDao.instances.createPaper(title, index);
+		WebNode node= WebNodeDao.instances.createPaper(title, citeseer_id, year,index);
 		if(node!=null){
 			return  node.getName()+ " {id:"+node.getId()+"}"+" created successfully!";
 		}else{

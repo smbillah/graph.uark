@@ -12,77 +12,7 @@
 
 </head>
 <body>
-	<div class="myselect">
-		<h1>Select a Node Type </h1>	
-		<select id="category">		
-			<option value="authors" selected>authors</option>
-			<option value="papers">papers</option>
-			<option value="interests">interests</option>
-		</select>
-		<div class="spacer"></div>
-		<p></p>
-	</div>
-	
-	<div class="spacer"></div>
-	
-	<div id="form_authors" class="stylized">		
-		<h1>Add New Author </h1>
-		<p>Enter basic information about an author</p>		
-		<form action="../rest/nodes/add_author">
-			<label for="fname">First Name* <span class="small">Required for indexing</span> </label> 
-			<input type="text" name="fname" />
-			
-			<label for="mname">Middle Name <span class="small">Optional middle name</span> </label> 
-			<input type="text" name="mname" /> 
-			
-			<label for="lname">Last Name* <span class="small">Required for indexing</span> </label> 
-			<input type="text" name="lname" /> 
-			
-			<label for="num_pubs">Num Pubs* <span class="small">Number of publications</span> </label> 
-			<input type="text" name="num_pubs" /> 
-			
-			<label for="citeseer_id">CiteSeer ID<span class="small">CiteSeer ID for this author</span> </label> 
-			<input type="text" name="citeseer_id" /> 
-						
-			
-			<input type="hidden" class="hidden_category" name="index"/>
-			<button type="submit" id="submit">Add</button>
-			
-			<div class="spacer"></div>
-		</form>
-	</div>		
-	
-	<div id="form_interests" class="stylized">		
-		<h1>Add New Interest </h1>
-		<p>Enter basic information about an interest</p>
-		
-		<form action="../rest/nodes/add_interest" method="POST">
-			<label for="name">Interest Name* <span class="small">Required for indexing</span> </label> 
-			<input type="text" name="name" />									
-			
-			<input type="hidden" class="hidden_category" name="index"/>
-			<button type="submit" id="submit">Add</button>
-			
-			<div class="spacer"></div>
-		</form>
-	</div>
-	
-	<div id="form_papers" class="stylized">		
-		<h1>Add New Paper </h1>
-		<p>Enter basic information about a paper</p>
-		
-		<form action="../rest/nodes/add_paper" method="POST">
-			<label for="name">Paper Title* <span class="small">Required for indexing</span> </label> 
-			<input type="text" name="title" />									
-			
-			<input type="hidden" class="hidden_category" name="index"/>
-			<button type="submit" id="submit">Add</button>
-			
-			<div class="spacer"></div>
-		</form>
-	</div>
-		
-	
+
 	<script>
 	$(document).ready(function(){
 		
@@ -179,5 +109,82 @@
 	});
 				 	
 	</script>
+
+	<div class="myselect">
+		<h1>Select a Node Type </h1>	
+		<select id="category">		
+			<option value="authors" selected>authors</option>
+			<option value="papers">papers</option>
+			<option value="interests">interests</option>
+		</select>
+		<div class="spacer"></div>
+		<p></p>
+	</div>
+	
+	<div class="spacer"></div>
+	
+	<div id="form_authors" class="stylized">		
+		<h1>Add New Author </h1>
+		<p>Enter basic information about an author</p>		
+		<form action="../rest/nodes/add_author">
+			<label for="fname">First Name* <span class="small">Required for indexing</span> </label> 
+			<input type="text" name="fname" />
+			
+			<label for="mname">Middle Name <span class="small">Optional middle name</span> </label> 
+			<input type="text" name="mname" /> 
+			
+			<label for="lname">Last Name* <span class="small">Required for indexing</span> </label> 
+			<input type="text" name="lname" /> 
+			
+			<label for="num_pubs">Num Pubs* <span class="small">Number of publications</span> </label> 
+			<input type="text" name="num_pubs" /> 
+			
+			<label for="citeseer_id">CiteSeer ID<span class="small">CiteSeer ID for this author</span> </label> 
+			<input type="text" name="citeseer_id" /> 
+						
+			
+			<input type="hidden" class="hidden_category" name="index"/>
+			<button type="submit" id="submit">Add</button>
+			
+			<div class="spacer"></div>
+		</form>
+	</div>		
+	
+	<div id="form_interests" class="stylized">		
+		<h1>Add New Interest </h1>
+		<p>Enter basic information about an interest</p>
+		
+		<form action="../rest/nodes/add_interest" method="POST">
+			<label for="name">Interest Name* <span class="small">Required for indexing</span> </label> 
+			<input type="text" name="name" />									
+			
+			<input type="hidden" class="hidden_category" name="index"/>
+			<button type="submit" id="submit">Add</button>
+			
+			<div class="spacer"></div>
+		</form>
+	</div>
+	
+	<div id="form_papers" class="stylized">		
+		<h1>Add New Paper </h1>
+		<p>Enter basic information about a paper</p>
+		
+		<form action="../rest/nodes/add_paper" method="POST">
+			<label for="name">Paper Title* <span class="small">Required for indexing</span> </label> 
+			<input type="text" name="title" />
+			
+			<label for="citeseer_id">Paper ID <span class="small">CiteSeer Paper ID</span> </label> 
+			<input type="text" name="citeseer_id" />
+			
+			<label for="year">Year <span class="small">Publication Year</span> </label> 
+			<input type="text" name="year" />									
+			
+			<input type="hidden" class="hidden_category" name="index"/>
+			<button type="submit" id="submit">Add</button>
+			
+			<div class="spacer"></div>
+		</form>
+	</div>			
+		
 </body>
 </html>
