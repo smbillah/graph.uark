@@ -19,6 +19,7 @@ import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ReturnableEvaluator;
 import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Traverser.Order;
+import org.neo4j.graphdb.index.IndexHits;
 import org.neo4j.graphdb.index.RelationshipIndex;
 import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.graphdb.traversal.Traverser;
@@ -39,7 +40,7 @@ public enum WebNodeDao {
 	
 
 	RestAPI restAPI;
-	RestNodeIndex restIndex;
+	RestNodeIndex nodeIndex;
 	TraversalDescription traversalDescription;
 	RelationshipIndex relationshipIndex;
 	GraphDatabaseService neo4jdb;
@@ -104,22 +105,28 @@ public enum WebNodeDao {
 		}
 		return null;
 	}
+	
+	public Relationship getRelationshipBetween(String src, String target, REL_TYPE rel){
+		String query=rel.name()+ ":"+ src+"_"+target;	
+		IndexHits<Relationship> hits = relationshipIndex.query(query);		 
+		return hits.getSingle();  
+	}
 
 	public Relationship addRelationship(String src, String target,
 			String rel_type, String rel_value) {
 		RestRelationship rel;
-		REL_TYPE relationship = REL_TYPE.valueOf(rel_type);
+		REL_TYPE relationship_type = REL_TYPE.valueOf(rel_type);
 
 		RestNode s = restAPI.getNodeById(Long.parseLong(src));
 		RestNode t = restAPI.getNodeById(Long.parseLong(target));
 
-		if((rel = (RestRelationship) checkRelationship(s, t, relationship))==null){
-			rel = (RestRelationship) s.createRelationshipTo(t, relationship);			
+		if((rel = (RestRelationship) getRelationshipBetween(src, target, relationship_type))==null){
+			rel = (RestRelationship) s.createRelationshipTo(t, relationship_type);			
 		}
 		
 
 		// under development
-		switch (relationship) {
+		switch (relationship_type) {
 		case coauthor:
 			rel_value=""+(Integer.parseInt(""+ rel.getProperty("" + REL_PROP.num_connections, "0")) 
 					+ Integer.parseInt(rel_value));
@@ -145,7 +152,8 @@ public enum WebNodeDao {
 
 			break;
 		}
-		// relationshipIndex.putIfAbsent(rel, "type", relationship.name());
+		
+		 relationshipIndex.putIfAbsent(rel, relationship_type.name(), src+"_"+target);
 
 		return rel;
 	}
@@ -160,9 +168,6 @@ public enum WebNodeDao {
 		
 		ArrayList<WebNode> results = new ArrayList<WebNode>();
 		RestIndex<RestNode> index;
-		
-		
-		
 		try {
 			switch( INDEX.valueOf(index_name)){
 			case authors:
@@ -225,9 +230,14 @@ public enum WebNodeDao {
 	}
 
 	
-	private String nodeTraversal(String  node_id) {
+	public int countAuthor(){		
+		RestIndex<RestNode> index = restAPI.getIndex("authors");
+		String query=NODE_PROP.lname +": *";
+		return index.query(query).size();
 		
-		
+	}
+	
+	private String nodeTraversal(String  node_id) {				
 		Node node= restAPI.getNodeById(Long.parseLong(node_id));
 		org.neo4j.graphdb.Traverser t = node.traverse(Order.BREADTH_FIRST,
 				StopEvaluator.END_OF_GRAPH,
@@ -530,8 +540,25 @@ public enum WebNodeDao {
 		//WebGraph g = WebNodeDao.instances.buildCoAuthorGraph(id,""+3);
 		// System.out.println("Happy with this so far" +
 		// auths.get(0).getName());
-		WebNodeDao.instances.nodeTraversal(id);
+		//WebNodeDao.instances.nodeTraversal(id);
+		RestNode n1= WebNodeDao.instances.restAPI.getNodeById(3);
+		RestNode n2= WebNodeDao.instances.restAPI.getNodeById(11);
+		Relationship r1= n1.createRelationshipTo(n2, REL_TYPE.cites);
+		WebNodeDao.instances.relationshipIndex.putIfAbsent(r1, "between", "masum1");
+		long a=10;
 		
-
+//		String query="coauthor :"+ "114 74";
+//		IndexHits<Relationship> hits = WebNodeDao.instances.relationshipIndex.query(query);
+//		try{
+//			for ( Relationship r : hits ){
+//			         // do something with the hit
+//			    	 a= r.getId();
+//			}
+//		}
+//		finally{
+//			     hits.close();
+//		}
+		
+		System.out.print( WebNodeDao.instances.countAuthor());
 	}
 }
