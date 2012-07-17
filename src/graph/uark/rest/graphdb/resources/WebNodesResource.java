@@ -189,11 +189,23 @@ public class WebNodesResource {
 		return WebNodeDao.instances.getAuthor(id);
 	}
 	
-	@GET
+	@POST
 	@Path("all")
 	@Produces({ MediaType.APPLICATION_JSON})
 	public ArrayList<Author> getNode() {
 		return WebNodeDao.instances.getAllAuthor();
 	}
+	
+	@POST
+	@Path("isexists")
+	@Produces(MediaType.TEXT_PLAIN)
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	public String isExists(@FormParam("fname") String fname,			
+			@FormParam("lname") String lname,
+			@Context HttpServletResponse servletResponse) throws IOException {
+		return WebNodeDao.instances.isNameExists(fname, lname);
+	}
+	
+	
 	
 }

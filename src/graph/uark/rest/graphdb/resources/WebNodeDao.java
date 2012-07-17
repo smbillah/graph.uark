@@ -130,7 +130,17 @@ public enum WebNodeDao {
 	}
 	
 	public Relationship getRelationshipBetween(String src, String target, REL_TYPE rel){
-		String query=rel.name()+ ":"+ src+"_"+target;	
+		String query="";
+
+		switch(rel){
+		case coauthor:
+			query= rel.name()+ ":"+ src+"_"+target +" OR "+ rel.name()+ ":"+ target+"_"+src;
+			break;
+		default:
+			query=rel.name()+ ":"+ src+"_"+target;
+			break;
+		}
+	
 		IndexHits<Relationship> hits = relationshipIndex.query(query);		 
 		return hits.getSingle();  
 	}
@@ -181,6 +191,19 @@ public enum WebNodeDao {
 		return rel;
 	}
 
+	
+	public String isNameExists(String fname, String lname){
+		String query=NODE_PROP.fname +":"+ fname+" AND "+ NODE_PROP.lname+":"+lname;
+		RestIndex<RestNode> index=restAPI.getIndex("authors");
+		String id="0";
+		
+		for(RestNode n :index.query(query)){
+			id= ""+ n.getId();
+			break;
+		}
+		return id;
+	}
+	
 	public List<WebNode> getWebNodesFromQuery(String term, String index_name) {
 		int count = 0,
 			maxCount = 7,

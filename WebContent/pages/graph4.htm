@@ -83,6 +83,18 @@
 	<div id="container" style="width: 100%">
 		<div id="menue" style="width: 30%; float:left;">
 			<div class="searchbox" style="width:90%">
+				
+				<form action="../rest/nodes/isexists" method="POST">
+					<label for="fname">First Name* <span class="small">Found in indexing</span> </label> 
+					<input type="text" name="fname" />
+					<br>
+					<label for="lname">Last Name* <span class="small">Found in indexing</span> </label> 
+					<input type="text" name="lname" />
+					
+					<div class="spacer"></div>											
+					<button type="submit" id="submit">Search</button>								
+				</form>				
+				<br>
 				<label>Draw all authors </label>
 				<br>		
 				<button id="draw">Draw</button>
@@ -109,7 +121,8 @@
 					<div id="authors"></div>
 				</div>
 				<div id="tab_citing">					
-					<div id="citing"></div>
+					<div id="citing">						
+					</div>
 				</div>
 				<div id="tab_cited">				
 					<div id="cited"></div>
