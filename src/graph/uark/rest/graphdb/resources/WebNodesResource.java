@@ -58,8 +58,8 @@ public class WebNodesResource {
 	@GET
 	@Path("count")
 	@Produces(MediaType.TEXT_PLAIN)
-	public String getCount() {
-		int count = 10;
+	public String getCount() {		
+		int count =WebNodeDao.instances.countAuthor();
 		return String.valueOf(count);
 	}
 	
@@ -183,10 +183,17 @@ public class WebNodesResource {
 	// Allows to type http://localhost:8081/graph.uark/rest/nodes/1
 	// 1 will be treaded as parameter node and passed to WebNodeResource	
 	@GET
-	@Path("{node}")
+	@Path("{node_id}")
 	@Produces({ MediaType.APPLICATION_JSON})
-	public Author getNode(@PathParam("node") String id) {
+	public Author getNode(@PathParam("node_id") String id) {
 		return WebNodeDao.instances.getAuthor(id);
+	}
+	
+	@GET
+	@Path("all")
+	@Produces({ MediaType.APPLICATION_JSON})
+	public ArrayList<Author> getNode() {
+		return WebNodeDao.instances.getAllAuthor();
 	}
 	
 }

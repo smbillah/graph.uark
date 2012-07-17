@@ -77,6 +77,7 @@ public enum WebNodeDao {
 		}
 	}
 
+
 	public Author getAuthor(String str_id) {
 		long id = 0;
 		try {
@@ -85,6 +86,28 @@ public enum WebNodeDao {
 		} catch (Exception ex) {
 			return null;
 		}
+	}
+	
+	public int countAuthor(){		
+		RestIndex<RestNode> index = restAPI.getIndex("authors");
+		String query=NODE_PROP.lname +": *";
+		return index.query(query).size();		
+	}
+	
+	public ArrayList<Author> getAllAuthor() {
+		RestIndex<RestNode> index = restAPI.getIndex("authors");
+		String query=NODE_PROP.lname +": *";
+				
+		ArrayList<Author> allAuthors= new ArrayList<Author>();
+		for (RestNode node :index.query(query)){
+
+			try {
+				allAuthors.add( new Author(node));
+			} catch (Exception ex) {
+				;
+			}			
+		}
+		return allAuthors;
 	}
 
 	public WebNode getWebNode(long id) {
@@ -229,13 +252,6 @@ public enum WebNodeDao {
 		return results;
 	}
 
-	
-	public int countAuthor(){		
-		RestIndex<RestNode> index = restAPI.getIndex("authors");
-		String query=NODE_PROP.lname +": *";
-		return index.query(query).size();
-		
-	}
 	
 	private String nodeTraversal(String  node_id) {				
 		Node node= restAPI.getNodeById(Long.parseLong(node_id));

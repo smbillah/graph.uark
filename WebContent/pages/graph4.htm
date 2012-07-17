@@ -1,0 +1,123 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Graph Drawing Service</title>
+<script src="../scripts/jquery/js/jquery-1.7.2.min.js"></script>
+<script src="../scripts/jquery/js/jquery-ui-1.8.20.custom.min.js"></script>
+<script type="text/javascript" src="../scripts/d3/d3.v2.js"></script>
+<link type='text/css' rel='stylesheet' href='../styles/force.css' />
+<link type='text/css' rel='stylesheet' href="../styles/form.css" />
+<link type='text/css' rel='stylesheet' href="../scripts/jquery/css/ui-lightness/jquery-ui-1.8.20.custom.css" />
+<script type="text/javascript" src="../scripts/uark/js_lib.js"></script>
+
+</head>
+<body>
+
+	<script>
+	
+	//graph drawing funcitons
+	var width = 900,
+	    height = 600;
+	
+	var network_types=["authors", "citing", "cited"],		
+		color = d3.scale.category20(),
+		//divClone = $("#coauthor").html(),
+		hiddenElementID="hiddenElementID";
+	
+	
+	//document ready function
+	$(document).ready(function(){
+		//autocomplete(hiddenElementID,"name");		
+		$( "#tabs" ).tabs({
+			ajaxOptions: {
+				error: function( xhr, status, index, anchor ) {
+					$( anchor.hash ).html(
+						"Couldn't load this tab. We'll try to fix this as soon as possible. ");
+				}
+			}
+		});
+		
+		$("#draw").click(function(){			
+			draw();
+			//draw(114, $('#depth').val());
+		});		
+		
+	});
+		
+	function node_select(node, index){
+		log("Selected: " + node.name+ " (id:"+node.id+"); press 'Draw' button now.","name");											
+	};
+	
+	
+	//graph drawing function		
+	function draw(node_id){
+		    // render graphs
+		    //var node_id= $('#'+hiddenElementID).val();
+		    var $tabs = $('#tabs').tabs();
+			var selected = $tabs.tabs('option', 'selected'); // => 0
+			network_type=network_types[selected];
+			depth = $('div#tab_'+network_type+' > div > select').val();
+			
+		    
+			
+	      $("#"+network_type).empty();
+	      switch(selected){
+	      	case 0:	      	
+	      		all_authors_graph(network_type, width, height);
+	    	  	break;
+	      	case 1:
+	      		;//citation_graph(network_type, node_id, depth, width, height);
+		    	break;
+	      	case 2:
+	      		;//directed_graph(network_type, node_id, depth, width, height);
+		    	break;
+	    	  
+	      }
+		   
+	};
+	
+	</script>
+	
+	
+
+	<div id="container" style="width: 100%">
+		<div id="menue" style="width: 30%; float:left;">
+			<div class="searchbox" style="width:90%">
+				<label>Draw all authors </label>
+				<br>		
+				<button id="draw">Draw</button>
+			</div>
+			<br>
+			
+	
+			<div class="searchbox">
+				<label for="log_name">Author's Profile <span class="small">(coming soon)</span>: </label>
+				<br>
+				<div class="ui-widget-content" id="log_name"  style="width:90%"></div>
+			</div>
+		
+		</div>
+				
+		<div id="content" style="width:70%; float:left;">
+			<div id="tabs">
+				<ul>
+					<li><a href="#tab_authors">All Authors</a></li>
+					<li><a href="#tab_citing">Citing Authors Graph</a></li>
+					<li><a href="#tab_cited">Cited Authors Graph</a></li>
+				</ul>
+				<div id= "tab_authors" >					
+					<div id="authors"></div>
+				</div>
+				<div id="tab_citing">					
+					<div id="citing"></div>
+				</div>
+				<div id="tab_cited">				
+					<div id="cited"></div>
+				</div>
+			</div>			
+			
+		</div>
+	</div>
+	
+</body>
+</html>

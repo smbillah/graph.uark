@@ -263,6 +263,93 @@ var svg = d3.select("#"+div_id).append("svg:svg")
 	});
 };
 
+
+//draw all nodes
+function all_authors_graph(div_id, width, height){
+	var force = d3.layout.force()
+    .charge(-130)
+    .gravity(.005)
+    .theta(.1)
+    .linkDistance(60)
+    .size([width, height])
+    ;
+
+var svg = d3.select("#"+div_id).append("svg:svg")
+	.attr("width", width)
+	.attr("height", height)
+	.attr("pointer-events", "all")
+	//.append('svg:g')
+		//.call(d3.behavior.zoom().x(x).y(y).scaleExtent([1, 8]).on("zoom", 
+			//	function(){redraw(svg );}))
+	//.append('svg:g')
+	;
+
+
+  //library call
+	d3.json("../rest/nodes/all", function(json) {
+	  json[0].fixed=true;
+	  json[0].x=width/2;
+	  json[0].y=height/2;
+	  force.nodes(json)
+	       .links([])
+	       .linkDistance(70)
+	       .start();
+	
+	 // var link = svg.selectAll("line.link")
+	   //   .data([])
+	     // .enter().append("svg:line")
+	      //.attr("class", "link")
+	      //.on("mouseover", mouseover_link)
+		  //.on("mouseout", mouseout_link)
+	      //.style("stroke-width", function(d) { return 2+ 5*d.value/json.max_connection; });
+	  
+	  //link.append("title")
+	  //.text(function(d) { return "coauthored "+d.value+ " times"; });
+	
+	
+	
+	  var node = svg.selectAll("g.node")
+  		.data(json)
+		.enter().append("svg:g")
+  		.attr("class", "node")
+  		.on("mouseover", mouseover_node)
+		.on("mouseout", mouseout_node)
+		//.on("dblclick",node_select )    				
+		//.on("dblclick", function(d,i) { node_select(d.id); })
+  		.call(force.drag)
+  		;
+	  
+	  node.append("svg:circle")					      
+	      //.attr("class", "node")
+	      .attr("r", function(d){ return 5;})
+	      .attr("class", function(d) {if(d.web_id) return "coauthornode";
+	    	  						  else return "centernode";})					      
+	      ;
+	  
+	  node.append("svg:text")
+	  	   .attr("class", "nodetext")
+	  	   .attr("dx", 12)
+	  	   .attr("dy", ".35em")
+	  	   .text(function(d) { return d.name; });
+	
+	  node.append("title")
+	  .text(function(d) { return d.num_pubs>1?	"published "+d.num_pubs+ " articles":	
+		  										"published "+d.num_pubs+ " article"; });				  
+	
+	  
+	  force.on("tick", function() {
+	   // link.attr("x1", function(d) { return d.source.x; })
+	     //   .attr("y1", function(d) { return d.source.y; })
+	      //  .attr("x2", function(d) { return d.target.x; })
+	      //  .attr("y2", function(d) { return d.target.y; });
+	
+	    
+	    node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+	  });
+	});
+};
+
+
 //draw citation graph
 function citation_graph(div_id, node_id, depth, width, height){
 	var force = d3.layout
