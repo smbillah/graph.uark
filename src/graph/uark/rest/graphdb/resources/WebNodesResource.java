@@ -207,6 +207,16 @@ public class WebNodesResource {
 	}
 	
 	@POST
+	@Path("update_publication")
+	@Produces(MediaType.TEXT_PLAIN)
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	public String updatePublication(@FormParam("id") String id,			
+			@FormParam("num_pubs") String num_pubs,
+			@Context HttpServletResponse servletResponse) throws IOException {
+		return WebNodeDao.instances.updateAuthor(id, num_pubs);
+	}
+	
+	@POST
 	@Path("is_cluster_exists")
 	@Produces(MediaType.TEXT_PLAIN)
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)

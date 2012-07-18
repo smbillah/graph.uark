@@ -479,6 +479,19 @@ public enum WebNodeDao {
 
 	}
 
+	
+	public String updateAuthor(String id, String num_pubs){
+		try{
+			RestNode node= restAPI.getNodeById(Long.parseLong(id));
+			int pubs = Integer.parseInt(""+ node.getProperty(NODE_PROP.num_pubs + "",0))
+						+Integer.parseInt(num_pubs);
+			node.setProperty(NODE_PROP.num_pubs + "", pubs);		
+			return ""+pubs;
+		}
+		catch (Exception e) {
+			return "0";
+		}
+	}
 	public WebNode editAuthor(String fname, String mname, String lname,
 			String num_pubs, String citeseer_id, String id) {
 
