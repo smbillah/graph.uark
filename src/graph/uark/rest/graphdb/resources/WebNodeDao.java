@@ -193,7 +193,20 @@ public enum WebNodeDao {
 
 	
 	public String isNameExists(String fname, String lname){
-		String query=NODE_PROP.fname +":"+ fname+" AND "+ NODE_PROP.lname+":"+lname;
+		String query=NODE_PROP.fname +":"+ fname.toLowerCase()+" AND "
+					+ NODE_PROP.lname+":"+lname.toLowerCase();
+		RestIndex<RestNode> index=restAPI.getIndex("authors");
+		String id="0";
+		
+		for(RestNode n :index.query(query)){
+			id= ""+ n.getId();
+			break;
+		}
+		return id;
+	}
+	
+	public String isCiteSeerIDExists(String citeseer_id){
+		String query=NODE_PROP.citeseer_id +":"+ citeseer_id;
 		RestIndex<RestNode> index=restAPI.getIndex("authors");
 		String id="0";
 		
@@ -456,6 +469,8 @@ public enum WebNodeDao {
 			// mname.toLowerCase());
 			restAPI.addToIndex(rest_node, index, NODE_PROP.lname + "",
 					lname.toLowerCase());
+			restAPI.addToIndex(rest_node, index, NODE_PROP.citeseer_id + "",
+					citeseer_id);
 
 			return new WebNode(rest_node, NODE_TYPE.AUTHOR);
 		} catch (Exception ex) {

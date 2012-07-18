@@ -197,13 +197,22 @@ public class WebNodesResource {
 	}
 	
 	@POST
-	@Path("isexists")
+	@Path("is_name_exists")
 	@Produces(MediaType.TEXT_PLAIN)
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	public String isExists(@FormParam("fname") String fname,			
 			@FormParam("lname") String lname,
 			@Context HttpServletResponse servletResponse) throws IOException {
 		return WebNodeDao.instances.isNameExists(fname, lname);
+	}
+	
+	@POST
+	@Path("is_cluster_exists")
+	@Produces(MediaType.TEXT_PLAIN)
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	public String isExists(@FormParam("cluster") String citeseer_id,						
+			@Context HttpServletResponse servletResponse) throws IOException {
+		return WebNodeDao.instances.isCiteSeerIDExists(citeseer_id);
 	}
 	
 	
