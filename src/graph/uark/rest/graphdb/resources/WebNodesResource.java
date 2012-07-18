@@ -97,9 +97,9 @@ public class WebNodesResource {
 
 		WebNode node= WebNodeDao.instances.createAuthor(fname,mname,lname,num_pubs,citeseer_id,index);
 		if(node!=null){
-			return  node.getName()+ " {id:"+node.getId()+"}"+" created successfully!";
+			return  node.getId()+ " id [name: "+node.getName()+"]" +" created successfully!";
 		}else{
-			return "An error has been occured :(";
+			return "0 An error has been occured :(";
 		}		
 	}
 	
